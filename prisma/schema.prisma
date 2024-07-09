@@ -1,0 +1,122 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model likes {
+  like_id                          Int      @id @default(autoincrement())
+  user_id                          Int
+  liked_user_id                    Int
+  liked_at                         DateTime @default(now()) @db.Timestamp(6)
+  users_likes_liked_user_idTousers users    @relation("likes_liked_user_idTousers", fields: [liked_user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+  users_likes_user_idTousers       users    @relation("likes_user_idTousers", fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model matches {
+  match_id                      Int      @id @default(autoincrement())
+  user1_id                      Int
+  user2_id                      Int
+  matched_at                    DateTime @default(now()) @db.Timestamp(6)
+  users_matches_user1_idTousers users    @relation("matches_user1_idTousers", fields: [user1_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+  users_matches_user2_idTousers users    @relation("matches_user2_idTousers", fields: [user2_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user1_id, user2_id])
+}
+
+model project_applications {
+  application_id Int       @id @default(autoincrement())
+  user_id        Int?
+  applicant_name String    @db.VarChar(255)
+  project_id     Int?
+  role_name      String    @db.VarChar(255)
+  status         String    @default("Pending") @db.VarChar(50)
+  applied_on     DateTime  @db.Timestamp(6)
+  reviewed_on    DateTime? @db.Timestamp(6)
+  projects       projects? @relation(fields: [project_id], references: [project_id], onDelete: Cascade, onUpdate: NoAction)
+  users          users?    @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model projects {
+  project_id           Int                    @id @default(autoincrement())
+  host_id              Int
+  members              Json?                  @default("[]")
+  project_title        String                 @db.VarChar(255)
+  domain               String                 @db.VarChar(255)
+  description          String
+  link                 String?                @db.VarChar(255)
+  required_roles       String[]               @default([])
+  posted_on            DateTime               @db.Timestamp(6)
+  start_date           DateTime               @db.Date
+  end_date             DateTime?              @db.Date
+  status               String                 @default("Open") @db.VarChar(50)
+  edited_on            DateTime?              @db.Timestamp(6)
+  project_applications project_applications[]
+  users                users                  @relation(fields: [host_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model user_experience {
+  exp_id            Int      @id @default(autoincrement())
+  user_id           Int?
+  role              String   @db.VarChar(255)
+  role_type         String   @db.VarChar(255)
+  organization      String   @db.VarChar(255)
+  organization_type String   @db.VarChar(255)
+  start_date        DateTime @db.Date
+  end_date          DateTime @db.Date
+  tech_stack        String[]
+  contributions     String[]
+  users             users?   @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model user_projects {
+  user_project_id Int      @id @default(autoincrement())
+  user_id         Int?
+  project_title   String?  @db.VarChar(255)
+  in_progress     Boolean?
+  domain          String?  @db.VarChar(255)
+  description     String?
+  project_link    String?  @db.VarChar(255)
+  github_link     String?  @db.VarChar(255)
+  features        String[]
+  tech_stack      String[]
+  group           Boolean?
+  team_members    String[]
+  campus_project  Boolean?
+  collaborators   String[]
+  users           users?   @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model users {
+  user_id                          Int                    @id @default(autoincrement())
+  profile_picture                  String?                @db.VarChar(255)
+  resume                           Bytes?
+  name                             String?                @db.VarChar(255)
+  email                            String?                @unique @db.VarChar(255)
+  rollnumber                       String?                @unique @db.VarChar(20)
+  batch                            Int?
+  branch                           String?                @db.VarChar(255)
+  dob                              DateTime?              @db.Date
+  location                         String?                @db.VarChar(255)
+  pers_email                       String?                @db.VarChar(255)
+  mobile                           String?                @unique @db.Char(10)
+  about                            String?
+  github                           String?                @unique @db.VarChar(255)
+  linkedin                         String?                @unique @db.VarChar(255)
+  skills                           String[]
+  interests                        String[]
+  learning                         String[]
+  user_type                        String?                @db.VarChar(25)
+  likes_likes_liked_user_idTousers likes[]                @relation("likes_liked_user_idTousers")
+  likes_likes_user_idTousers       likes[]                @relation("likes_user_idTousers")
+  matches_matches_user1_idTousers  matches[]              @relation("matches_user1_idTousers")
+  matches_matches_user2_idTousers  matches[]              @relation("matches_user2_idTousers")
+  project_applications             project_applications[]
+  projects                         projects[]
+  user_experience                  user_experience[]
+  user_projects                    user_projects[]
+}
