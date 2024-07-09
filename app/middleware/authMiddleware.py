@@ -14,6 +14,7 @@ async def authMiddleware(request: Request, call_next):
         )
     user = authenticateUser(token)
     if user:
+        request.state.user = user  # Store user data in request state
         response = await call_next(request)
         return response
     else:
