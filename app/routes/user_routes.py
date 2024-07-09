@@ -1,8 +1,6 @@
 import os
 from dotenv import load_dotenv
-from fastapi import APIRouter, Request
-from fastapi.responses import JSONResponse
-import requests
+from fastapi import APIRouter, HTTPException
 from prisma import Prisma
 
 load_dotenv()
@@ -14,24 +12,13 @@ user_router = APIRouter()
 prisma = Prisma()
 
 @user_router.get('/users')
-async def getAllUsers(request: Request):
+async def get_all_usernames():
     await prisma.connect()
-    # token = request.cookies.get('jwt')
     try:
-        # response = requests.get(
-        #     f"{BACKEND_API}/user/allUsers",
-        #     headers={'Content-Type': 'Application/json', 'Cookie': f"jwt={token}"}
-        # )
-        users = prisma.users.find_many(select={'name'})
-        return [users.name for user in users]
-
-        # response.raise_for_status()
-        # allUsers = response.json()
-        # return JSONResponse(content={'users': allUsers})
-    except requests.RequestException as e:
-        print(f"Error in getting all users: {e}")
-        return JSONResponse(
-            status_code=500,
-            content={'message': 'Error fetching users'}
-        )
-    
+        # Fetch all users with specific fields selected
+        users_with_names = await prisma.users.find_many()
+        usernames = [user.name for user in users_with_names if user.name] 
+        return usernames
+    except Exception as e:
+        print(f"Error fetching user names: {e}")
+        raise HTTPException(status_code=500, detail="Error fetching user names")
