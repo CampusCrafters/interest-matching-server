@@ -1,26 +1,21 @@
 import os
-from dotenv import load_dotenv
-from fastapi import FastAPI, Request
-import requests
+from fastapi import Request
 from fastapi.responses import JSONResponse
+import requests
 
-app = FastAPI()
-load_dotenv()
-PORT = os.getenv('PORT')
 VERIFY_TOKEN_API = os.getenv('VERIFY_API')
 
-@app.get('/users')
-def getAllUsers(request: Request):
+async def authMiddleware(request: Request, call_next):
     token = request.cookies.get('jwt')
     if not token:
         return JSONResponse(
             status_code=400,
             content={'message': 'No token provided in the request'}
         )
-    
     user = authenticateUser(token)
     if user:
-        return JSONResponse(content={'message': 'Success', 'decoded': user})
+        response = await call_next(request)
+        return response
     else:
         return JSONResponse(
             status_code=401,
@@ -39,8 +34,3 @@ def authenticateUser(token: str):
     except requests.RequestException as e:
         print(f"Error in authenticateUser: {e}")
         return None
-
-if __name__ == "__main__":
-    import uvicorn
-    PORT = int(os.getenv('PORT'))
-    uvicorn.run("main:app", host="127.0.0.1", port=PORT, reload=True)
