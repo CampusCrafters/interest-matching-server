@@ -1,20 +1,13 @@
-import os
-from dotenv import load_dotenv
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 from prisma import Prisma
-
-load_dotenv()
-
-BACKEND_API = os.getenv('BACKEND_API')
 
 user_router = APIRouter()
 
 prisma = Prisma()
 
-
 @user_router.get('/users')
-async def get_all_usernames():
+async def get_all_users():
     await prisma.connect()
     try:
         users = await prisma.users.find_many()
