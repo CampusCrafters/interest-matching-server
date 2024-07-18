@@ -30,9 +30,8 @@ async def get_liked_users(request: Request):
         liked_user_ids = [like.liked_user_id for like in await prisma.likes.find_many(where={'user_id': user_id})]
         liked_users = await prisma.users.find_many(where={'user_id': {'in': liked_user_ids}})
 
-        return JSONResponse(
-            content={'user_id': user_id, 'liked_users': liked_users}
-        )
+        return liked_users
+
     finally:
         await prisma.disconnect()
 
@@ -54,8 +53,9 @@ async def get_matched_users(request: Request):
         matched_user_ids = [match.user1_id if match.user2_id == user_id else match.user2_id for match in matches]
         matched_users = await prisma.users.find_many(where={'user_id': {'in': matched_user_ids}})
 
-        return JSONResponse(
-            content={'user_id': user_id, 'liked_users': matched_users}
-        )
+        return matched_users
+    except Exception as e:
+        print(f"Error fetching matched users: {e}")
+        raise HTTPException(status_code=500, detail="Error fetching matched users")
     finally:
         await prisma.disconnect()

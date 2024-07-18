@@ -12,9 +12,7 @@ async def like_user(liked_user_id: int, request: Request):
         await prisma.connect()
 
         user_email = request.state.user['email']
-        print(user_email)
         user_id = (await prisma.users.find_unique(where={'email': user_email})).user_id
-        print(f'userid: ${user_id}')
         if liked_user_id == user_id:
             return JSONResponse(
                 status_code=400,
