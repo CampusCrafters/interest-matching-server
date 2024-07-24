@@ -1,5 +1,4 @@
 from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import JSONResponse
 from prisma import Prisma
 
 user_router = APIRouter()
