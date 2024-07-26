@@ -15,13 +15,21 @@ app.include_router(match_router)
 
 SWAGGER_UI_PATHS = {"/docs", "/openapi.json", "/redoc"}
 
+allowed_origins = [
+    "https://campustown.in",
+    "http://localhost:5173",
+    "https://backend.campustown.in",
+    "https://match.backend.campustown.in",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
+    allow_origins=allowed_origins,  # Allows specified origins
     allow_credentials=True,
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers
 )
+
 @app.middleware('http')
 async def authenticationMiddleware(request: Request, call_next):
     if request.url.path in SWAGGER_UI_PATHS:
